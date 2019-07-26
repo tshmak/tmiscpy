@@ -62,3 +62,7 @@ inst/doc
 # spyder project files
 .spyproject
 
+# pip install -e files
+__pycache__
+*.egg-info
+
