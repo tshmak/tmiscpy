@@ -6,6 +6,33 @@ Created on Wed Jul 24 17:08:02 2019
 @author: tshmak
 """
 
+__all__ = ['wavaudio', 'read_mnist']
+import pdb
+
+
+
+
+
+""" read_mnist
+Script for reading MNIST dataset.
+Script downloaded from https://gist.github.com/tylerneylon/ce60e8a06e7506ac45788443f7269e40
+!! Remember to ungzip the file first! 
+"""
+
+import struct
+import numpy as np
+
+def read_mnist(filename):
+    with open(filename, 'rb') as f:
+        zero, data_type, dims = struct.unpack('>HBB', f.read(4))
+        shape = tuple(struct.unpack('>I', f.read(4))[0] for d in range(dims))
+        return np.fromstring(f.read(), dtype=np.uint8).reshape(shape)
+
+
+""" wavaudio
+A class for dealing with .wav files, including functions for playing and plotting
+"""
+
 #import os
 import scipy.io.wavfile 
 import matplotlib.pyplot as plt
@@ -14,9 +41,7 @@ import tempfile
 import subprocess
 import math
 import numpy as np
-#import pdb
 #import time
-
 
 class wavaudio: 
     def __init__(self, wavfile): 
@@ -82,7 +107,7 @@ class wavaudio:
         y = self.wav2int(wavfile)[1]
         x = np.linspace(start,start+wa.duration, wa.nframes)
         plt.clf()
-        plt.plot(x, y)
+        plt.plot(x, y, linewidth=0.1)
         plt.xlabel('seconds')
         
     def plot_segment(self, start_sec: float, end_sec: float): 

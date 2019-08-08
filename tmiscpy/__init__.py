@@ -1,3 +1,2 @@
-# def foo():
-#     return (u'something'')
+from tmiscpy.functions import *
     
