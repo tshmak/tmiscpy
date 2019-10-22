@@ -9,7 +9,7 @@ setup(name='tmiscpy',
       license='MIT',
       packages=['tmiscpy'],
       install_requires=['jieba', 'tabulate', 'numpy', 'scipy', 
-                        'matplotlib', 'subprocess'],
+                        'matplotlib'],
       include_package_data=True,
       zip_safe=False)
 
