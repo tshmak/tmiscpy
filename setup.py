@@ -8,7 +8,8 @@ setup(name='tmiscpy',
       author_email='tim.sh.mak@gmail.com',
       license='MIT',
       packages=['tmiscpy'],
-      install_requires=[],
+      install_requires=['jieba', 'tabulate', 'numpy', 'scipy', 
+                        'matplotlib', 'subprocess'],
       include_package_data=True,
       zip_safe=False)
 
