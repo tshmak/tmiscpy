@@ -6,11 +6,57 @@ Created on Wed Jul 24 17:08:02 2019
 @author: tshmak
 """
 
-__all__ = ['wavaudio', 'read_mnist']
+__all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut']
 import pdb
 
+"""
+Cut strings using jieba 
+https://github.com/fxsjy/jieba
+"""
+import jieba
+def jiebacut(string: str): 
+    if type(string) != str: 
+        print('string needs to be of type str. Try using ' + 
+              '\'",".join(str(x) for x in string) \'' + 
+              'to concatenate them.')
+        return None
+    
+    jb = jieba.cut(string)
+    words = []
+    while True: 
+        try: 
+            test = next(jb)
+            if test != ',': 
+                words.append(test)
+        except: 
+            break     
+    return words
 
+""" examine
+Trying to replicate R's str() function
+""" 
 
+from tabulate import tabulate
+def examine(obj, TYPE = '', PRINT=True): 
+        
+    Dict = {}
+    A = dir(obj)
+    for item in A:
+#        pdb.set_trace()
+        cmd = 'type(obj.' + item + ').__name__'
+        Type = eval(cmd)
+        
+        if TYPE != '': 
+            if Type != TYPE: 
+                continue
+            
+        Dict[item] = Type
+        
+    if (PRINT): 
+        res = tabulate(Dict.items(), headers=['Object', 'Type'], tablefmt='orgtbl')
+        print(res)
+    else: 
+        return Dict
 
 
 """ read_mnist
@@ -54,6 +100,7 @@ class wavaudio:
         self.sampwidth = opened_wav.getsampwidth()
         
         self.params = opened_wav.getparams()
+        self.play_options = None
         opened_wav.close()
         
         
@@ -83,7 +130,10 @@ class wavaudio:
     
     def play_wav(self, wavfile): 
         # Requires 'sox' installed externally 
-        subprocess.run(['play', wavfile])
+        if self.play_options is not None: 
+            subprocess.run(['play', wavfile, self.play_options])
+        else:
+            subprocess.run(['play', wavfile])
         
     def _play_segment(self, startframe: int, endframe: int): 
         wavfile = self._save_segment_to_file(startframe, endframe)
