@@ -6,8 +6,17 @@ Created on Wed Jul 24 17:08:02 2019
 @author: tshmak
 """
 
-__all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir']
+__all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir', 
+           'home']
 import pdb
+
+"""
+Get home directory
+"""
+def home(): 
+    from os.path import expanduser
+    home = expanduser("~")
+    return home
 
 """
 Change current directory (if in interactive mode)
