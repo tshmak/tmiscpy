@@ -10,6 +10,14 @@ __all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir']
 import pdb
 
 """
+Get home directory
+"""
+def home(): 
+    from os.path import expanduser
+    home = expanduser("~")
+    return home
+
+"""
 Change current directory (if in interactive mode)
 """
 def chdir(dir: str):
