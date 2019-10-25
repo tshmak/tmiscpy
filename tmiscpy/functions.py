@@ -23,8 +23,8 @@ https://github.com/fxsjy/jieba
 **** Actually this function is redundant... just use jieba.lcut() **** 
 **** Actually it handles in a different way from jieba.lcut() ****
 """
-import jieba
 def jiebacut(string: str): 
+    import jieba
     if type(string) != str: 
         print('string needs to be of type str. Try using ' + 
               '\'",".join(str(x) for x in string) \'' + 
@@ -46,8 +46,8 @@ def jiebacut(string: str):
 Trying to replicate R's str() function
 """ 
 
-from tabulate import tabulate
 def examine(obj, TYPE = '', PRINT=True): 
+    from tabulate import tabulate
         
     Dict = {}
     A = dir(obj)
@@ -75,10 +75,10 @@ Script downloaded from https://gist.github.com/tylerneylon/ce60e8a06e7506ac45788
 !! Remember to ungzip the file first! 
 """
 
-import struct
-import numpy as np
 
 def read_mnist(filename):
+    import struct
+    import numpy as np
     with open(filename, 'rb') as f:
         zero, data_type, dims = struct.unpack('>HBB', f.read(4))
         shape = tuple(struct.unpack('>I', f.read(4))[0] for d in range(dims))
@@ -89,17 +89,17 @@ def read_mnist(filename):
 A class for dealing with .wav files, including functions for playing and plotting
 """
 
-#import os
-import scipy.io.wavfile 
-import matplotlib.pyplot as plt
-import wave
-import tempfile
-import subprocess
-import math
-import numpy as np
-#import time
-
 class wavaudio: 
+    #import os
+    import scipy.io.wavfile 
+    import matplotlib.pyplot as plt
+    import wave
+    import tempfile
+    import subprocess
+    import math
+    import numpy as np
+    #import time
+
     def __init__(self, wavfile): 
         self.wavfile = wavfile
         opened_wav = wave.open(self.wavfile, 'rb')
