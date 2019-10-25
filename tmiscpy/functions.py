@@ -91,16 +91,11 @@ A class for dealing with .wav files, including functions for playing and plottin
 
 class wavaudio: 
     #import os
-    import scipy.io.wavfile 
-    import matplotlib.pyplot as plt
-    import wave
     import tempfile
-    import subprocess
-    import math
-    import numpy as np
     #import time
 
     def __init__(self, wavfile): 
+        import wave
         self.wavfile = wavfile
         opened_wav = wave.open(self.wavfile, 'rb')
         
@@ -121,6 +116,7 @@ class wavaudio:
         return endframe - remainder
     
     def _save_segment_to_file(self, startframe: int, endframe: int, file = tempfile.NamedTemporaryFile(suffix='.wav').name): 
+        import wave
         
         endframe = self.adjust_frames(startframe, endframe) # Remove the incomplete samples
         
@@ -140,6 +136,7 @@ class wavaudio:
     
     def play_wav(self, wavfile): 
         # Requires 'sox' installed externally 
+        import subprocess
         if self.play_options is not None: 
             subprocess.run(['play', wavfile, self.play_options])
         else:
@@ -150,6 +147,7 @@ class wavaudio:
         self.play_wav(wavfile)
         
     def sec2frame(self, sec: float):
+        import math
         frames = math.floor(sec * self.rate)
         return frames
     
@@ -160,9 +158,14 @@ class wavaudio:
         return self._save_segment_to_file(self.sec2frame(start_sec), self.sec2frame(end_sec), file)
         
     def wav2int(self, wavfile): 
+        import scipy.io.wavfile 
         return scipy.io.wavfile.read(wavfile)
     
     def plotwav(self, wavfile, start = 0): 
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
         wa = wavaudio(wavfile)
         y = self.wav2int(wavfile)[1]
         x = np.linspace(start,start+wa.duration, wa.nframes)
@@ -175,6 +178,9 @@ class wavaudio:
         self.plotwav(tempwav, start = start_sec)
         
     def plot_n_play(self, start_sec: float, end_sec: float, plot_start = None, plot_end = None): 
+
+        import matplotlib.pyplot as plt
+
         length = end_sec - start_sec
         if plot_start is None: 
             plot_start = max(0, start_sec - length)
