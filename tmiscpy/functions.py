@@ -6,12 +6,22 @@ Created on Wed Jul 24 17:08:02 2019
 @author: tshmak
 """
 
-__all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut']
+__all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir']
 import pdb
+
+"""
+Change current directory (if in interactive mode)
+"""
+def chdir(dir: str):
+    import sys, os
+    if sys.argv[0] == '': 
+        os.chdir(dir)
 
 """
 Cut strings using jieba 
 https://github.com/fxsjy/jieba
+**** Actually this function is redundant... just use jieba.lcut() **** 
+**** Actually it handles in a different way from jieba.lcut() ****
 """
 import jieba
 def jiebacut(string: str): 
