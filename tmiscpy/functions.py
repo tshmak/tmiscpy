@@ -7,8 +7,34 @@ Created on Wed Jul 24 17:08:02 2019
 """
 
 __all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir', 
-           'home']
+           'home', 'os', 'head', 'interactive']
 import pdb
+import os
+
+"""
+Test if interactive
+"""
+def interactive(): 
+    import sys
+    return hasattr(sys, 'ps1')
+
+
+"""
+To get a view of an object 
+"""
+def head(obj, n=10, tail=False, sample=False): 
+    if type(obj) is list: 
+        if not sample: 
+            if tail:
+                print('Not yet implemented')
+            else: 
+                print('Not yet implemented')
+        else: 
+            print('Not yet implemented')
+    else: 
+        print('Not yet implemented')
+        
+
 
 """
 Get home directory
