@@ -7,9 +7,25 @@ Created on Wed Jul 24 17:08:02 2019
 """
 
 __all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir', 
-           'home', 'os', 'head', 'interactive']
+           'home', 'os', 'head', 'interactive', 'filename']
 import pdb
 import os
+
+
+"""
+like my old Rfilename command in R
+"""
+def filename(filenamestub): 
+    import sys
+    import re
+    filename = sys.argv[0]
+    if (re.search('python$', filename) != None) | (filename == ''): 
+        filename = filenamestub
+        
+    filenamestub = re.sub('\\.py$', '', filename)
+
+    return filenamestub
+
 
 """
 Test if interactive
