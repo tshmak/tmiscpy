@@ -7,9 +7,27 @@ Created on Wed Jul 24 17:08:02 2019
 """
 
 __all__ = ['wavaudio', 'read_mnist', 'examine', 'jiebacut', 'chdir', 
-           'home', 'os', 'head', 'interactive']
+           'home', 'os', 'head', 'interactive', 'kaldi_segment']
 import pdb
 import os
+
+"""
+Turn a bash pipe into a file like object that can be read by pd.read_csv()
+"""
+def pipe2file(cmd):
+    
+    import sys
+    import subprocess
+    
+    a = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    
+    from io import StringIO
+    
+    b = StringIO(a.communicate()[0].decode('utf-8'))
+    
+    return b
+
+
 
 """
 Test if interactive
@@ -230,10 +248,45 @@ class wavaudio:
 
         self.play_segment(start_sec, end_sec)
         
-        
+"""
+A class for handling kaldi audio segments
+"""
+
+class kaldi_segment: 
     
-#os.chdir('/Users/tshmak/WORK/Projects/segmentation/testaudio') 
-#wavfile = '181221_1253_mono.wav'
-#test = wavaudio(wavfile)        
-#test.plot_n_play(0,2, 0,10)
-#test.plot_n_play(2,4, 0,10)
+    def __init__(self, segment_path, 
+                 segments = 'segments', 
+                 text = 'text', 
+                 wav = 'wav.scp'):
+        
+        self.segments_file = segments
+        self.text_file = text
+        self.wav_file = wav
+        self.segments = None
+        self.text = None
+        self.wav = None
+        
+    def get(self, what: str): 
+        
+        import pandas as pd
+        if(what == 'segments'): 
+            if(self.segments == None): 
+                self.segments = pd.read_csv(self.segments_file, sep='\s', header=None)
+            return self.segments
+        
+        elif(what == 'text'): 
+            if(self.text == None): 
+                pipefile = pipe2file(['sed', 's/ */\t/', self.text_file])
+                self.text = pd.read_csv(pipefile, sep='\t', header=None)
+            return self.text
+                
+        elif(what == 'wav'): 
+            if(self.wav == None): 
+                pipefile = pipe2file(['sed', 's/ */\t/', self.wav_file])
+                self.wav = pd.read_csv(pipefile, sep='\t', header=None)
+            return self.wav
+        
+        return ValueError('Input must be one of "segments", "text", or "wav".')
+                    
+        
+        
