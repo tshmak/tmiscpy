@@ -83,7 +83,7 @@ Change current directory (if in interactive mode)
 """
 def chdir(dir: str):
     import sys, os
-    if sys.argv[0] == '': 
+    if interactive(): 
         os.chdir(dir)
 
 """
@@ -264,45 +264,107 @@ class wavaudio:
 
         self.play_segment(start_sec, end_sec)
         
+
 """
 A class for handling kaldi audio segments
+
+Usage examples: 
+s = kaldi_segment('/path/to/segment_path')
+s.subset = a_list_of_segmentID
+s.wavID
+s.segmentID
+s.start
+s.df(['wavID', 'start', 'end']).to_csv(header=False, index=False, sep='\t')
 """
 
+import pandas as pd
 class kaldi_segment: 
     
     def __init__(self, segment_path, 
+                 subset = None, 
                  segments = 'segments', 
                  text = 'text', 
                  wav = 'wav.scp'):
         
-        self.segments_file = segments
-        self.text_file = text
-        self.wav_file = wav
-        self.segments = None
-        self.text = None
-        self.wav = None
+        self.segments_file = segment_path + '/' + segments
+        self.text_file = segment_path + '/' + text
+        self.wav_file = segment_path + '/' + wav
+        self.subset = subset
+        self._segments = pd.read_csv(self.segments_file, 
+            sep=' ', names=['wavID', 'start', 'end'], index_col=0)
+        self._text = None
+        self._wav = None
         
-    def get(self, what: str): 
+    @property
+    def segments(self):
+        return self._subset(self._segments)
+    
+    @property
+    def text(self): 
+        if self._text is None: 
+            pipefile = pipe2file(['sed', 's/ /\t/', self.text_file])
+            self._text = pd.read_csv(pipefile, sep='\t', 
+                names=['trans'], index_col=0)
+        return self._subset(self._text)
         
-        import pandas as pd
-        if(what == 'segments'): 
-            if(self.segments == None): 
-                self.segments = pd.read_csv(self.segments_file, sep='\s', header=None)
-            return self.segments
+    @property
+    def wav(self): 
+        if self._wav is None: 
+            pipefile = pipe2file(['sed', 's/ /\t/', self.wav_file])
+            self._wav = pd.read_csv(pipefile, sep='\t', 
+                names=['wavfile'], index_col=0)
+        return self._wav.loc[self._subset(self.segments['wavID']),:]
+            
+    def _subset(self, obj): 
+        if self.subset is None: 
+            return obj
+        else: 
+            if type(obj) is pd.Series: 
+                return obj.loc[self.subset]
+            elif type(obj) is pd.DataFrame: 
+                return obj.loc[self.subset, :]
+            else: 
+                return ValueError("obj must be a pandas Series or DataFrame.")
+            
+    @property
+    def trans(self): 
+        return self.text['trans']
         
-        elif(what == 'text'): 
-            if(self.text == None): 
-                pipefile = pipe2file(['sed', 's/ */\t/', self.text_file])
-                self.text = pd.read_csv(pipefile, sep='\t', header=None)
-            return self.text
-                
-        elif(what == 'wav'): 
-            if(self.wav == None): 
-                pipefile = pipe2file(['sed', 's/ */\t/', self.wav_file])
-                self.wav = pd.read_csv(pipefile, sep='\t', header=None)
-            return self.wav
+    @property
+    def wavfile(self): 
+        return self.wav['wavfile']
         
-        return ValueError('Input must be one of "segments", "text", or "wav".')
-                    
+    @property
+    def segmentID(self): 
+        return self._subset(self.segments.index.to_series())
         
+    @property
+    def wavID(self):
+        return self.segments['wavID']
         
+    @property
+    def start(self):
+        return self.segments['start']
+        
+    @property
+    def end(self):
+        return self.segments['end']
+    
+    def df(self, list_of_vars): 
+        l = []
+        for i in list_of_vars: 
+            l = l + [self.__getattribute__(i)]
+        return pd.concat(l, axis=1)
+
+# path = '/home/tshmak/WORK/Projects/WFST/cmhkdemo1/data/cmhk_3rd_batch_cv'
+# s = kaldi_segment(path)
+# ss = s.segments.index[0:3].to_series()
+# s.subset = ss
+# s.start
+# s.wav
+# # s.subset = None
+# # s.end
+# # s.segmentID
+# # s.subset = ss
+# print(pd.concat([s.start, s.end], axis=1).to_csv(sep='\t', header=False))
+# s.df(['start', 'wavID'])
