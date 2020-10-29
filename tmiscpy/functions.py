@@ -12,11 +12,10 @@ import pdb
 import os, sys
 
 
-"""
-like my old Rfilename command in R
-"""
 def filename(filenamestub): 
-    import sys
+    """
+    like my old Rfilename command in R
+    """
     import re
     filename = sys.argv[0]
     if (re.search('python$', filename) != None) | (filename == ''): 
@@ -27,10 +26,10 @@ def filename(filenamestub):
     return filenamestub
 
 
-"""
-Turn a bash pipe into a file like object that can be read by pd.read_csv()
-"""
 def pipe2file(cmd, **kwargs):
+    """
+    Turn a bash pipe into a file like object that can be read by pd.read_csv()
+    """
     
     import subprocess
     
@@ -44,18 +43,18 @@ def pipe2file(cmd, **kwargs):
 
 
 
-"""
-Test if interactive
-"""
 def interactive(): 
+    """
+    Test if interactive
+    """
     import sys
     return hasattr(sys, 'ps1')
 
 
-"""
-To get a view of an object 
-"""
 def head(obj, n=10, tail=False, sample=False): 
+    """
+    To get a view of an object 
+    """
     if type(obj) is list: 
         if not sample: 
             if tail:
@@ -69,29 +68,28 @@ def head(obj, n=10, tail=False, sample=False):
         
 
 
-"""
-Get home directory
-"""
 def home(): 
+    """
+    Get home directory
+    """
     from os.path import expanduser
     home = expanduser("~")
     return home
 
-"""
-Change current directory (if in interactive mode)
-"""
 def chdir(dir: str):
-    import sys, os
+    """
+    Change current directory (if in interactive mode)
+    """
     if interactive(): 
         os.chdir(dir)
 
-"""
-Cut strings using jieba 
-https://github.com/fxsjy/jieba
-**** Actually this function is redundant... just use jieba.lcut() **** 
-**** Actually it handles in a different way from jieba.lcut() ****
-"""
 def jiebacut(string: str): 
+    """
+    Cut strings using jieba 
+    https://github.com/fxsjy/jieba
+    **** Actually this function is redundant... just use jieba.lcut() **** 
+    **** Actually it handles in a different way from jieba.lcut() ****
+    """
     import jieba
     if type(string) != str: 
         print('string needs to be of type str. Try using ' + 
@@ -110,11 +108,11 @@ def jiebacut(string: str):
             break     
     return words
 
-""" examine
-Trying to replicate R's str() function
-""" 
 
 def examine(obj, TYPE = '', PRINT=True): 
+    """ examine
+    Trying to replicate R's str() function
+    """ 
     from tabulate import tabulate
         
     Dict = {}
@@ -137,14 +135,14 @@ def examine(obj, TYPE = '', PRINT=True):
         return Dict
 
 
-""" read_mnist
-Script for reading MNIST dataset.
-Script downloaded from https://gist.github.com/tylerneylon/ce60e8a06e7506ac45788443f7269e40
-!! Remember to ungzip the file first! 
-"""
 
 
 def read_mnist(filename):
+    """ read_mnist
+    Script for reading MNIST dataset.
+    Script downloaded from https://gist.github.com/tylerneylon/ce60e8a06e7506ac45788443f7269e40
+    !! Remember to ungzip the file first! 
+    """
     import struct
     import numpy as np
     with open(filename, 'rb') as f:
@@ -153,14 +151,12 @@ def read_mnist(filename):
         return np.fromstring(f.read(), dtype=np.uint8).reshape(shape)
 
 
-""" wavaudio
-A class for dealing with .wav files, including functions for playing and plotting
-"""
 
 class wavaudio: 
-    #import os
+    """ wavaudio
+    A class for dealing with .wav files, including functions for playing and plotting
+    """
     import tempfile
-    #import time
 
     def __init__(self, wavfile): 
         import wave
@@ -264,30 +260,30 @@ class wavaudio:
         self.play_segment(start_sec, end_sec)
         
 
-"""
-A class for handling kaldi audio data 
-See https://kaldi-asr.org/doc/data_prep.html for background
-
-It outputs a pandas Series, or a pandas DataFrame if the .df() function is used 
-The DataFrame/Series is indexed by the utterance ID, and can be subsetted using standard 
-pandas syntax. 
-
-The utterance ID (uttID) is taken from the segments file. If the segments file is not present, 
-it comes from the wav.scp file (which must be present), and is equal to the recording ID (recID). 
-
-Usage examples: 
-s = kaldi_audio('/path/to/kaldi_data')
-s.uttID                                # Outputs a pandas Series
-s.recID
-s.begin                                # Note that this may not be available.
-s.wavfile 
-s.df(['uttID', 'recID', 'wavfile'])    # Outputs a pandas DataFrame
-s.wavfile.loc[some_uttID_list]         # for subsetting
-s.df(['wavfile', 'begin', 'end']).to_csv(header=False, index=False, sep='\t')
-"""
-
-import pandas as pd
 class kaldi_audio: 
+    """
+    A class for handling kaldi audio data 
+    See https://kaldi-asr.org/doc/data_prep.html for background
+
+    It outputs a pandas Series, or a pandas DataFrame if the .df() function is used 
+    The DataFrame/Series is indexed by the utterance ID, and can be subsetted using standard 
+    pandas syntax. 
+
+    The utterance ID (uttID) is taken from the segments file. If the segments file is not present, 
+    it comes from the wav.scp file (which must be present), and is equal to the recording ID (recID). 
+
+    Usage examples: 
+    s = kaldi_audio('/path/to/kaldi_data')
+    s.uttID                                # Outputs a pandas Series
+    s.recID
+    s.begin                                # Note that this may not be available.
+    s.wavfile 
+    s.df(['uttID', 'recID', 'wavfile'])    # Outputs a pandas DataFrame
+    s.wavfile.loc[some_uttID_list]         # for subsetting
+    s.df(['wavfile', 'begin', 'end']).to_csv(header=False, index=False, sep='\t')
+    """
+
+    import pandas as pd
     
     def __init__(self, segment_path, 
                  subset = None, 
