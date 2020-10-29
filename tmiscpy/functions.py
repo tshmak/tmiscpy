@@ -170,6 +170,7 @@ class wavaudio:
         
         self.params = opened_wav.getparams()
         self.play_options = None
+        self.playcmd = 'play'
         opened_wav.close()
         
         
@@ -184,17 +185,15 @@ class wavaudio:
         
         endframe = self.adjust_frames(startframe, endframe) # Remove the incomplete samples
         
-        opened_wav = wave.open(self.wavfile, 'rb')
-        opened_wav.setpos(startframe)
-        blob = opened_wav.readframes(endframe - startframe)
-        opened_wav.close()
+        with wave.open(self.wavfile, 'rb') as opened_wav: 
+            opened_wav.setpos(startframe)
+            blob = opened_wav.readframes(endframe - startframe)
         
-        out = wave.open(file, 'wb')
-        out.setnchannels(self.params.nchannels)
-        out.setsampwidth(self.params.sampwidth)
-        out.setframerate(self.params.framerate)
-        out.writeframes(blob)
-        out.close()
+        with wave.open(file, 'wb') as out: 
+            out.setnchannels(self.params.nchannels)
+            out.setsampwidth(self.params.sampwidth)
+            out.setframerate(self.params.framerate)
+            out.writeframes(blob)
         
         return file
     
@@ -202,9 +201,9 @@ class wavaudio:
         # Requires 'sox' installed externally 
         import subprocess
         if self.play_options is not None: 
-            subprocess.run(['play', wavfile, self.play_options])
+            subprocess.run([self.playcmd, wavfile, self.play_options])
         else:
-            subprocess.run(['play', wavfile])
+            subprocess.run([self.playcmd, wavfile])
         
     def _play_segment(self, startframe: int, endframe: int): 
         wavfile = self._save_segment_to_file(startframe, endframe)
@@ -260,6 +259,7 @@ class wavaudio:
         self.play_segment(start_sec, end_sec)
         
 
+import pandas as pd
 class kaldi_audio: 
     """
     A class for handling kaldi audio data 
@@ -283,8 +283,6 @@ class kaldi_audio:
     s.df(['wavfile', 'begin', 'end']).to_csv(header=False, index=False, sep='\t')
     """
 
-    import pandas as pd
-    
     def __init__(self, segment_path, 
                  subset = None, 
                  segments = 'segments', 
