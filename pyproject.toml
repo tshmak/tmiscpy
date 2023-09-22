@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tmiscpy"
+version = "0.0.1"
+authors = [
+  { name="Timothy Mak", email="timmak@yahoo.com" },
+]
+description = "Miscellaneous tools for Python"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: MIT",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy ~= 1.22",
+    "librosa ~= 0.8",
+    "scipy", 
+    "matplotlib",
+    "pandas",
+]
+
+[project.scripts]
+smoketest = "tmiscpy.tests.test:test"
+
+[project.urls]
+"Homepage" = "https://github.com/tshmak/tmiscpy"
+
+[tool.setuptools.packages.find]
+where = [""]  # ["."] by default
+namespaces = false 
+
+[tool.bumpversion]
+current_version = "1.0.0"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "tmiscpy/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "README.md"
+
+[[tool.bumpversion.files]]
+filename = ".env"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
