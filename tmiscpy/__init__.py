@@ -1,3 +1,4 @@
 __all__ = []
-from tmiscpy.functions import *
+#from tmiscpy.functions import *
+from .functions import *
     
