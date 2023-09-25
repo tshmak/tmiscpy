@@ -21,14 +21,14 @@ class WavAudio:
     A improved class over wavaudio
     """
 
-    def __init__(self, wavfile, playcmd='play @wavfile', 
+    def __init__(self, wavfile, samp_rate=None, playcmd='play @wavfile', 
             sleep_after_play=False, _empty=False): 
 
         if _empty: # Not supposed to be called directly
             return
 
         #self.wavfile = wavfile
-        samp_rate, array = spwav.read(wavfile)
+        array, samp_rate = librosa.load(wavfile, sr=samp_rate)
         self._fill(array, samp_rate, playcmd, sleep_after_play)
 
     def _fill(self, array, samp_rate, playcmd, sleep_after_play): 
