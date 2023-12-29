@@ -21,7 +21,7 @@ class WavAudio:
     A improved class over wavaudio
     """
 
-    def __init__(self, wavfile, samp_rate=None, playcmd='play @wavfile', 
+    def __init__(self, wavfile, samp_rate=None, playcmd='sshplay @wavfile', 
             sleep_after_play=False, _empty=False): 
 
         if _empty: # Not supposed to be called directly
@@ -60,7 +60,7 @@ class WavAudio:
     def itemsize(self):
         return self.array.itemsize
 
-    def from_numpy(array, samp_rate, playcmd='play @wavfile', 
+    def from_numpy(array, samp_rate, playcmd='sshplay @wavfile', 
             sleep_after_play=False,
             file=tempfile.NamedTemporaryFile(suffix='.wav').name): 
 
@@ -122,27 +122,28 @@ class WavAudio:
         else: 
             return None
     
-    def _plot_wav(self, startframe, endframe, start = 0): 
+    def _plot_wav(self, startframe, endframe, start=0, reset=False): 
 
         nframes = endframe - startframe
         duration = nframes / self.samp_rate
         if self.nchannels == 1: 
             x = np.linspace(start,start+duration, nframes)
             y = self.array[0, startframe:endframe]
-            #plt.clf()
+            if reset: 
+                plt.clf()
             plt.plot(x, y, linewidth=0.1)
             plt.xlabel('seconds')
         else: 
             raise NotImplementedError('_plot_wav() not yet implemented for > 1 channels')
 
-    def plot(self, start_sec: float = 0.0, end_sec: float = None): 
+    def plot(self, start_sec: float = 0.0, end_sec: float = None, reset=False): 
         startframe = self.sec2frame(start_sec)
         endframe = self.sec2frame(end_sec)
         endframe = self._get_default_endframe(endframe)
-        self._plot_wav(startframe, endframe, start = start_sec)
+        self._plot_wav(startframe, endframe, start=start_sec, reset=reset)
         
-    def plot_n_play(self, start_sec: float = 0.0, end_sec: float = None, 
-            plot_start = None, plot_end = None): 
+    def plot_n_play(self, start_sec: float=0.0, end_sec: float=None, 
+            plot_start=None, plot_end=None, reset=False): 
 
         if end_sec is None: 
             _end_sec = self.duration
@@ -156,7 +157,7 @@ class WavAudio:
         if plot_end is None: 
             plot_end = min(self.duration, _end_sec + length)
         
-        self.plot(plot_start, plot_end)
+        self.plot(plot_start, plot_end, reset=reset)
         plt.axvspan(start_sec, _end_sec, color='gray', alpha=0.5)
         plt.pause(0.1) # For some reason this is needed to force python the render the graph immediately rather than when the function ends
         # https://stackoverflow.com/questions/37999928/how-to-force-matplotlib-to-plot-before-the-end-of-a-function
