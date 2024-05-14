@@ -32,6 +32,7 @@ class KaldiAudio:
     s.wavfile 
     s.df(['uttID', 'recID', 'wavfile'])    # Outputs a pandas DataFrame
     s.wavfile.loc[some_uttID_list]         # for subsetting
+    s.wavfile.reindex[some_uttID_list]         # for subsetting (but insert nan if uttID not in uttID)
     s.df(['wavfile', 'begin', 'end']).to_csv(header=False, index=False, sep='\t')
     """
 
@@ -112,45 +113,45 @@ class KaldiAudio:
     # Various columns from the files as pd.Series (all indexed by uttID)
     @property
     def text(self): 
-        return self._text.loc[self.uttID, 'text']
+        return self._text.reindex(self.uttID)['text']
         
     @property
     def wavfile(self): 
-        res = self._wav_scp.loc[self.recID, 'wavfile']
+        res = self._wav_scp.reindex(self.recID)['wavfile']
         res.index = self.uttID
         return res
         
     @property
     def begin(self):
-        return self._segments.loc[self.uttID, 'begin']
+        return self._segments.reindex(self.uttID)['begin']
         
     @property
     def end(self):
-        return self._segments.loc[self.uttID, 'end']
+        return self._segments.reindex(self.uttID)['end']
     
     @property
     def sphfile(self):
-        res = self._reco2file_and_channel.loc[self.recID, 'sphfile']
+        res = self._reco2file_and_channel.reindex(self.recID)['sphfile']
         res.index = self.uttID
         return res
     
     @property
     def rec_side(self):
-        res = self._reco2file_and_channel.loc[self.recID, 'rec_side']
+        res = self._reco2file_and_channel.reindex(self.recID)['rec_side']
         res.index = self.uttID
         return res
     
     @property
     def spkID(self):
-        return self._utt2spk.loc[self.uttID, 'spkID']
+        return self._utt2spk.reindex(self.uttID)['spkID']
     
     @property
     def featsfile(self):
-        return self._feats_scp.loc[self.uttID, 'featsfile']
+        return self._feats_scp.reindex(self.uttID)['featsfile']
     
     @property
     def cmvn_feats(self):
-        res = self._cmvn_scp.loc[self.spkID, 'cmvn_feats']
+        res = self._cmvn_scp.reindex(self.spkID)['cmvn_feats']
         res.index = self.uttID
         return res
     
