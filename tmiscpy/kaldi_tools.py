@@ -2,6 +2,16 @@ import os
 
 import pandas as pd
 
+def pipe2file(cmd, **kwargs):
+    """
+    Turn a bash pipe into a file like object that can be read by pd.read_csv()
+    """
+    import subprocess
+    a = subprocess.Popen(cmd, stdout=subprocess.PIPE, **kwargs)
+    from io import StringIO
+    b = StringIO(a.communicate()[0].decode('utf-8'))
+    return b
+
 class KaldiAudio: 
     """
     A class for handling kaldi audio data 
