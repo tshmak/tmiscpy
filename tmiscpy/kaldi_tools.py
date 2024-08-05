@@ -80,7 +80,7 @@ class KaldiAudio:
                 return pd.read_csv(pipefile, sep='\t', 
                         header=None, na_filter=False, **kwargs)
             else: 
-                return pd.read_csv(txtfile, delim_whitespace=True,
+                return pd.read_csv(txtfile, sep='\s+',
                         header=None, na_filter=False, **kwargs)
         else: 
             raise ValueError(txtfile + ' does not exist.')
