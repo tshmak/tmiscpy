@@ -1,6 +1,10 @@
 import os
+from os.path import join
+import tempfile
 
 import pandas as pd
+
+from tmiscpy.audio_tools import WavAudio
 
 def pipe2file(cmd, **kwargs):
     """
@@ -37,7 +41,6 @@ class KaldiAudio:
     """
 
     def __init__(self, segment_path, 
-                 subset = None, 
                  segments = 'segments', 
                  text = 'text', 
                  wav_scp = 'wav.scp', 
@@ -47,6 +50,7 @@ class KaldiAudio:
                  feats_scp = 'feats.scp', 
                  cmvn_scp = 'cmvn.scp'):
         
+        print('KaldiAudio is deprecated. Use KaldiAudio2 if possible.')
         self.segments_file = segment_path + '/' + segments
         self.text_file = segment_path + '/' + text
         self.reco2file_and_channel_file = segment_path + '/' + reco2file_and_channel
@@ -163,6 +167,188 @@ class KaldiAudio:
         return pd.concat(l, axis=1, join='inner')
 
 
- #path = '/home/tshmak/WORK/Projects/WFST/cmhkdemo1/data/cmhk_3rd_batch_test'
- #s = KaldiAudio(path)
+class KaldiAudio2: 
+    """
+    A new class for handling kaldi audio data 
+    Like KaldiAudio, I'll try to read a Kaldi directory
+    into a pandas data_frame, with each row corresponding
+    to a utterance
+    However, unlike KaldiAudio, I'll output lists and 
+    not pandas.Series
+    """
+    names = {
+            "wav.scp": {
+                "names": ["recID", "wavfile"], 
+                "index_col": "recID",
+                "two_cols": True,
+                },
+            "text": {
+                "names": ["uttID", "text"],
+                "index_col": "uttID",
+                "two_cols": True,
+                }, 
+            "reco2file_and_channel": {
+                "names": ["recID", "sphfile", "rec_side"],
+                "index_col": "recID",
+                }, 
+            "utt2spk": {
+                "names": ["uttID", "spkID"],
+                "index_col": "uttID",
+                }, 
+            "spk2utt": {
+                "names": ["spkID", "uttIDs"],
+                "index_col": "spkID",
+                "two_cols": True,
+                }, 
+            "spk2gender": {
+                "names": ["spkID", "gender"],
+                "index_col": "spkID",
+                }, 
+            "feats.scp": {
+                "names": ["uttID", "featsfile"],
+                "index_col": "uttID",
+                "two_cols": True,
+                }, 
+            "cmvn.scp": {
+                "names": ["spkID", "cmvn_feats"],
+                "index_col": "spkID",
+                "two_cols": True,
+                }, 
+            "segments": {
+                "names": ["uttID", "recID", "begin", "end"],
+                "index_col": "uttID",
+                }, 
+            }
+
+    def __init__(self, basedir, output_pandas_series=False): 
+        assert os.path.isfile(join(basedir, "wav.scp"))
+        self.basedir = basedir
+        self.columns = dict()
+        self.data = dict()
+        self.has_segments = os.path.isfile(join(basedir, 'segments')) 
+        self.has_spks = os.path.isfile(join(basedir, 'utt2spk')) 
+        self.index = dict()
+        if self.has_segments:
+            self.index['uttID'] = pd.Series(self.get_data('segments').index)
+            self.index['recID'] = self.get_data('segments')['recID'] 
+        else: 
+            self.index['recID'] = pd.Series(self.get_data('wav.scp').index)
+            self.index['uttID'] = pd.Series(self.index['recID'])
+        if self.has_spks:
+            self.index['spkID'] = self.get_data('utt2spk')['spkID']
+
+        if output_pandas_series: 
+            raise NotImplementedError # Not sure if this will be needed
+
+        self.recordings = dict()
+
+    
+    def get_data(self, which):
+        if which in self.data: 
+            return self.data[which]
+        self.data[which] = self.readtxt(
+                join(self.basedir, which), 
+                **self.names[which], 
+                ) # Output: pandas.DataFrame
+        return self.data[which]
+
+    def readtxt(self, txtfile, two_cols=False, **kwargs): 
+
+        if os.path.exists(txtfile): 
+            if two_cols: 
+                pipefile = pipe2file(['sed', 's/ /\t/', txtfile])
+                return pd.read_csv(pipefile, sep='\t', 
+                        header=None, na_filter=False, **kwargs)
+            else: 
+                return pd.read_csv(txtfile, sep='\s+',
+                        header=None, na_filter=False, **kwargs)
+        else: 
+            raise ValueError(txtfile + ' does not exist.')
+
+    def get_column(self, data, which, index='uttID'):
+        self.check_dir_exists(data)
+        assert self.get_data(data).index.name == index
+        if which not in self.columns: 
+            self.columns[which] = self.get_data(data).loc[self.index[index]][which].to_list()
+        return self.columns[which]
+
+    def check_dir_exists(self, which):
+        if not os.path.isfile(join(self.basedir, which)):
+            raise Exception(f'This kaldi directory does not have a {which} file: {self.basedir}')
+
+    @property
+    def begin(self): 
+        return self.get_column('segments', 'begin')
+
+    @property
+    def end(self): 
+        return self.get_column('segments', 'end')
+
+    @property
+    def wavfile(self): 
+        return self.get_column('wav.scp', 'wavfile', index='recID')
+
+    @property
+    def recID(self):
+        return self.index['recID']
+
+    @property
+    def uttID(self):
+        return self.index['uttID']
+
+    @property
+    def text(self): 
+        return self.get_column('text', 'text')
+
+    @property
+    def sphfile(self): 
+        return self.get_column('reco2file_and_channel', 'sphfile', index='recID')
+
+    @property
+    def rec_side(self): 
+        return self.get_column('reco2file_and_channel', 'rec_side', index='recID')
+
+    @property
+    def spkID(self):
+        return self.get_column('utt2spk', 'spkID')
+
+    @property
+    def featsfile(self):
+        return self.get_column('feats.scp', 'featsfile')
+    
+    @property
+    def cmvn_feats(self):
+        return self.get_column('cmvn.scp', 'cmvn_feats')
+
+    @property
+    def gender(self):
+        return self.get_column('spk2gender', 'gender', index='spkID')
+
+    def utterance(self, uttID): 
+        if not self.has_segments:
+            recID = uttID
+        else:
+            seg = self.get_data('segments').loc[uttID]
+            recID = seg['recID']
+        if recID not in self.recordings: 
+            _wavfile = self.get_data('wav.scp')['wavfile'].loc[recID]
+            if _wavfile.strip()[-1] == '|': # is a pipe rather than a .wav file
+                wavfile = self.pipe_to_tempwav(_wavfile)
+            elif _wavfile.strip().lower().endswith('.wav'):
+                wavfile = _wavfile
+            self.recordings[recID] = WavAudio(wavfile)
+        if not self.has_segments: 
+            return self.recordings[recID]
+        else:
+            utt = self.recordings[recID].segment(seg['begin'], seg['end'])
+            return utt
+
+    @staticmethod
+    def pipe_to_tempwav(soxpipe): 
+        raise NotImplementedError
+
+
+if __name__ == '__main__': 
+     path = '/mnt/nas2/asr_data/mandarin/boyue/original'
+     s = KaldiAudio2(path)
 
